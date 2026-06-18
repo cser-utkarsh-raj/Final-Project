@@ -1,9 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Check, ClipboardList, LogOut, PackagePlus, RefreshCcw, Send, ShieldCheck, X } from 'lucide-react';
 import './styles.css';
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const STORAGE_KEY = 'stationery.session';
+const CATEGORIES = ['PAPER', 'PEN', 'PENCIL', 'NOTEBOOK', 'MARKER', 'FILE', 'ERASER', 'OTHER'];
+const DEFAULT_ADMIN_CREDS = { fullName: '', email: 'admin@college.edu', password: 'Admin@123', role: 'ADMIN' };
+const DEFAULT_STUDENT_CREDS = { fullName: '', email: '', password: '', role: 'STUDENT' };
+const EMPTY_ITEM_FORM = { name: '', category: 'PEN', unit: 'piece', availableQuantity: 0, minimumQuantity: 0 };
+const EMPTY_REQUEST_LINE = { itemId: '', itemName: '', quantity: 1 };
 
 function apiFetch(path, token, options = {}) {
   return fetch(`${API}${path}`, {
@@ -24,12 +30,15 @@ function apiFetch(path, token, options = {}) {
 }
 
 function App() {
-  const [session, setSession] = useState(() => JSON.parse(localStorage.getItem('stationery.session') || 'null'));
+  const [session, setSession] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  });
   const [view, setView] = useState('catalog');
 
   useEffect(() => {
-    if (session) localStorage.setItem('stationery.session', JSON.stringify(session));
-    else localStorage.removeItem('stationery.session');
+    if (session) localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    else localStorage.removeItem(STORAGE_KEY);
   }, [session]);
 
   if (!session) return <AuthScreen onSession={setSession} />;
@@ -42,7 +51,7 @@ function App() {
         <div className="brand">
           <ShieldCheck size={24} />
           <div>
-            <strong>College Stores</strong>
+            <strong>StoreBook</strong>
             <span>{session.role.toLowerCase()}</span>
           </div>
         </div>
@@ -68,39 +77,56 @@ function App() {
 
 function AuthScreen({ onSession }) {
   const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ fullName: '', email: 'admin@college.edu', password: 'Admin@123', role: 'ADMIN' });
+  const [form, setForm] = useState(DEFAULT_ADMIN_CREDS);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setForm(mode === 'register' ? DEFAULT_STUDENT_CREDS : DEFAULT_ADMIN_CREDS);
+    setError('');
+  }, [mode]);
 
   function submit(event) {
     event.preventDefault();
     setError('');
+    
+    if (!form.email || !form.password) {
+      setError('Email and password required');
+      return;
+    }
+    if (mode === 'register' && !form.fullName) {
+      setError('Full name required');
+      return;
+    }
+    
+    setLoading(true);
     apiFetch(`/api/auth/${mode}`, null, {
       method: 'POST',
       body: JSON.stringify(mode === 'login' ? { email: form.email, password: form.password } : form)
-    }).then(onSession).catch(err => setError(err.message));
+    }).then(onSession).catch(err => setError(err.message)).finally(() => setLoading(false));
   }
 
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <h1>College Stores</h1>
+        <h1>StoreBook</h1>
         <p>Inventory and stationery request tracking for students and administrators.</p>
         <div className="segmented">
           <button className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>Login</button>
           <button className={mode === 'register' ? 'active' : ''} onClick={() => setMode('register')}>Register</button>
         </div>
         <form onSubmit={submit}>
-          {mode === 'register' && <input placeholder="Full name" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} />}
-          <input placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+          {mode === 'register' && <input placeholder="Full name" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} disabled={loading} />}
+          <input placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} disabled={loading} />
+          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} disabled={loading} />
           {mode === 'register' && (
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} disabled={loading}>
               <option value="STUDENT">Student</option>
               <option value="ADMIN">Admin</option>
             </select>
           )}
           {error && <div className="error">{error}</div>}
-          <button className="primary" type="submit">{mode === 'login' ? 'Login' : 'Create account'}</button>
+          <button className="primary" type="submit" disabled={loading}>{loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Create account')}</button>
         </form>
       </section>
     </main>
@@ -141,32 +167,45 @@ function ItemCard({ item }) {
 }
 
 function InventoryAdmin({ session }) {
-  const [form, setForm] = useState({ name: '', category: 'PEN', unit: 'piece', availableQuantity: 0, minimumQuantity: 0 });
+  const [form, setForm] = useState(EMPTY_ITEM_FORM);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function submit(event) {
     event.preventDefault();
     setMessage('');
+    
+    if (!form.name.trim()) {
+      setMessage('Item name required');
+      return;
+    }
+    if (form.availableQuantity < 0 || form.minimumQuantity < 0) {
+      setMessage('Quantities cannot be negative');
+      return;
+    }
+    
+    setLoading(true);
     apiFetch('/api/items', session.token, { method: 'POST', body: JSON.stringify(form) })
       .then(() => {
         setMessage('Item added to inventory.');
-        setForm({ name: '', category: 'PEN', unit: 'piece', availableQuantity: 0, minimumQuantity: 0 });
+        setForm(EMPTY_ITEM_FORM);
       })
-      .catch(err => setMessage(err.message));
+      .catch(err => setMessage(err.message))
+      .finally(() => setLoading(false));
   }
 
   return (
     <section className="form-section">
       <h2>Add Stationery Item</h2>
       <form className="data-form" onSubmit={submit}>
-        <input placeholder="Item name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-        <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-          {['PAPER', 'PEN', 'PENCIL', 'NOTEBOOK', 'MARKER', 'FILE', 'ERASER', 'OTHER'].map(c => <option key={c}>{c}</option>)}
+        <input placeholder="Item name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} disabled={loading} />
+        <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} disabled={loading}>
+          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
-        <input placeholder="Unit" value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} />
-        <input type="number" min="0" value={form.availableQuantity} onChange={e => setForm({ ...form, availableQuantity: Number(e.target.value) })} />
-        <input type="number" min="0" value={form.minimumQuantity} onChange={e => setForm({ ...form, minimumQuantity: Number(e.target.value) })} />
-        <button className="primary" type="submit"><PackagePlus size={18} /> Add item</button>
+        <input placeholder="Unit" value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} disabled={loading} />
+        <input type="number" min="0" value={form.availableQuantity} onChange={e => setForm({ ...form, availableQuantity: Number(e.target.value) || 0 })} disabled={loading} />
+        <input type="number" min="0" value={form.minimumQuantity} onChange={e => setForm({ ...form, minimumQuantity: Number(e.target.value) || 0 })} disabled={loading} />
+        <button className="primary" type="submit" disabled={loading}><PackagePlus size={18} /> {loading ? 'Adding...' : 'Add item'}</button>
       </form>
       {message && <p className="notice">{message}</p>}
     </section>
@@ -178,12 +217,13 @@ function Requests({ session }) {
 }
 
 function StudentRequests({ session }) {
-  const [line, setLine] = useState({ itemId: '', itemName: '', quantity: 1 });
+  const [line, setLine] = useState(EMPTY_REQUEST_LINE);
   const [requests, setRequests] = useState([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function load() {
-    apiFetch('/api/requests/mine', session.token).then(data => setRequests(data.content || []));
+    apiFetch('/api/requests/mine', session.token).then(data => setRequests(data.content || [])).catch(err => setMessage(err.message));
   }
 
   useEffect(load, [session.token]);
@@ -191,14 +231,21 @@ function StudentRequests({ session }) {
   function submit(event) {
     event.preventDefault();
     setMessage('');
+    
+    if (!line.itemId || !line.itemName || line.quantity < 1) {
+      setMessage('Item ID, name, and quantity (min 1) required');
+      return;
+    }
+    
+    setLoading(true);
     apiFetch('/api/requests', session.token, {
       method: 'POST',
       body: JSON.stringify({ items: [{ itemId: Number(line.itemId), itemName: line.itemName, quantity: Number(line.quantity) }] })
     }).then(() => {
-      setLine({ itemId: '', itemName: '', quantity: 1 });
+      setLine(EMPTY_REQUEST_LINE);
       setMessage('Request submitted.');
       load();
-    }).catch(err => setMessage(err.message));
+    }).catch(err => setMessage(err.message)).finally(() => setLoading(false));
   }
 
   return (
@@ -206,10 +253,10 @@ function StudentRequests({ session }) {
       <div>
         <h2>Submit Request</h2>
         <form className="data-form" onSubmit={submit}>
-          <input placeholder="Item ID" value={line.itemId} onChange={e => setLine({ ...line, itemId: e.target.value })} />
-          <input placeholder="Item name" value={line.itemName} onChange={e => setLine({ ...line, itemName: e.target.value })} />
-          <input type="number" min="1" value={line.quantity} onChange={e => setLine({ ...line, quantity: e.target.value })} />
-          <button className="primary" type="submit"><Send size={18} /> Submit</button>
+          <input placeholder="Item ID" value={line.itemId} onChange={e => setLine({ ...line, itemId: e.target.value })} disabled={loading} />
+          <input placeholder="Item name" value={line.itemName} onChange={e => setLine({ ...line, itemName: e.target.value })} disabled={loading} />
+          <input type="number" min="1" value={line.quantity} onChange={e => setLine({ ...line, quantity: Number(e.target.value) || 1 })} disabled={loading} />
+          <button className="primary" type="submit" disabled={loading}><Send size={18} /> {loading ? 'Submitting...' : 'Submit'}</button>
         </form>
         {message && <p className="notice">{message}</p>}
       </div>
@@ -220,20 +267,35 @@ function StudentRequests({ session }) {
 
 function AdminRequests({ session }) {
   const [requests, setRequests] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   function load() {
-    apiFetch('/api/requests', session.token).then(data => setRequests(data.content || []));
+    setError('');
+    apiFetch('/api/requests', session.token)
+      .then(data => setRequests(data.content || []))
+      .catch(err => setError(err.message));
   }
+  
   useEffect(load, [session.token]);
 
   function decide(id, action) {
+    setLoading(id);
     const options = action === 'reject'
       ? { method: 'POST', body: JSON.stringify({ reason: 'Not approved by stores office' }) }
       : { method: 'POST' };
-    apiFetch(`/api/requests/${id}/${action}`, session.token, options).then(load);
+    apiFetch(`/api/requests/${id}/${action}`, session.token, options)
+      .then(load)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
   }
 
-  return <RequestTable requests={requests} admin onApprove={id => decide(id, 'approve')} onReject={id => decide(id, 'reject')} />;
+  return (
+    <>
+      {error && <div className="error" style={{ margin: '1rem' }}>{error}</div>}
+      <RequestTable requests={requests} admin onApprove={id => decide(id, 'approve')} onReject={id => decide(id, 'reject')} />
+    </>
+  );
 }
 
 function RequestTable({ requests, admin, onApprove, onReject }) {
@@ -248,8 +310,13 @@ function RequestTable({ requests, admin, onApprove, onReject }) {
               <td>#{request.id || '-'}</td>
               <td>{request.studentEmail}</td>
               <td><span className={`status ${request.status.toLowerCase()}`}>{request.status}</span></td>
-              <td>{request.items.map(item => `${item.itemName} x ${item.quantity}`).join(', ')}</td>
-              {admin && <td className="actions"><button title="Approve" onClick={() => onApprove(request.id)}><Check size={17} /></button><button title="Reject" onClick={() => onReject(request.id)}><X size={17} /></button></td>}
+              <td>{request.items?.map(item => `${item.itemName} x${item.quantity}`).join(', ') || '-'}</td>
+              {admin && request.status === 'PENDING' && (
+                <td className="actions">
+                  <button title="Approve" onClick={() => onApprove(request.id)}><Check size={17} /></button>
+                  <button title="Reject" onClick={() => onReject(request.id)}><X size={17} /></button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
