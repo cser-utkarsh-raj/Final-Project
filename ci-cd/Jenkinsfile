@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'JDK17'
+        maven 'Maven3'
+        nodejs 'Node22'
+    }
+
+    environment {
+        JWT_SECRET = 'stationery-management-local-secret-key-that-is-long-enough-for-hmac'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Backend Unit Tests') {
+            steps {
+                dir('backend') {
+                    bat 'mvn clean test'
+                }
+            }
+            post {
+                always {
+                    junit 'backend/**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    bat 'npm install'
+                    bat 'npm run build'
+                }
+            }
+        }
+
+        stage('Package Services') {
+            steps {
+                dir('backend') {
+                    bat 'mvn package -DskipTests'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker compose -f ci-cd/docker-compose.yml build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                bat 'docker compose -f ci-cd/docker-compose.yml up -d'
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+jwt:
+  secret: ${JWT_SECRET:stationery-management-local-secret-key-that-is-long-enough-for-hmac}
+  expiration-ms: 86400000
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
