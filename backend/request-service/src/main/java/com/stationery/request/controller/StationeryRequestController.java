@@ -30,17 +30,17 @@ public class StationeryRequestController {
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('STUDENT')")
-    Page<RequestResponse> mine(@RequestParam(required = false) RequestStatus status,
-                               @RequestParam(defaultValue = "0") int page,
-                               @RequestParam(defaultValue = "20") int size,
+    Page<RequestResponse> mine(@RequestParam(name = "status", required = false) RequestStatus status,
+                               @RequestParam(name = "page", defaultValue = "0") int page,
+                               @RequestParam(name = "size", defaultValue = "20") int size,
                                HttpServletRequest request) {
         return service.myRequests(actor(request), status, PageRequest.of(page, Math.min(size, 50), Sort.by("createdAt").descending()));
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    Page<RequestResponse> all(@RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "20") int size) {
+    Page<RequestResponse> all(@RequestParam(name = "page", defaultValue = "0") int page,
+                              @RequestParam(name = "size", defaultValue = "20") int size) {
         return service.all(PageRequest.of(page, Math.min(size, 50), Sort.by("createdAt").descending()));
     }
 

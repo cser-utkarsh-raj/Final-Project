@@ -21,9 +21,9 @@ public class InventoryController {
     }
 
     @GetMapping
-    Page<ItemResponse> list(@RequestParam(defaultValue = "0") int page,
-                            @RequestParam(defaultValue = "20") int size,
-                            @RequestParam(defaultValue = "name") String sort) {
+    Page<ItemResponse> list(@RequestParam(name = "page", defaultValue = "0") int page,
+                            @RequestParam(name = "size", defaultValue = "20") int size,
+                            @RequestParam(name = "sort", defaultValue = "name") String sort) {
         return inventoryService.list(PageRequest.of(page, Math.min(size, 50), Sort.by(sort)));
     }
 
