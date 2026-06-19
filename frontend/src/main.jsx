@@ -530,22 +530,30 @@ function StudentRequests({ session }) {
       return;
     }
     setLoading(true);
-    apiFetch('/api/requests', session.token, {
-      method: 'POST',
-      body: JSON.stringify({
-        items: cart.map(item => ({
-          itemId: Number(item.itemId),
-          itemName: item.itemName,
-          quantity: Number(item.quantity)
-        }))
+
+    const promises = cart.map(item => {
+      return apiFetch('/api/requests', session.token, {
+        method: 'POST',
+        body: JSON.stringify({
+          items: [{
+            itemId: Number(item.itemId),
+            itemName: item.itemName,
+            quantity: Number(item.quantity)
+          }]
+        })
+      });
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        setCart([]);
+        showToast('Requests submitted successfully', 'success');
+        load();
       })
-    }).then(() => {
-      setCart([]);
-      showToast('Request submitted successfully', 'success');
-      load();
-    }).catch(err => {
-      showToast(err.message, 'error');
-    }).finally(() => setLoading(false));
+      .catch(err => {
+        showToast(err.message, 'error');
+      })
+      .finally(() => setLoading(false));
   }
 
   const selectedItem = catalogItems.find(item => String(item.id) === String(line.itemId));
