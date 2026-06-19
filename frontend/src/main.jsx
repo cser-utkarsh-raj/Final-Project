@@ -482,6 +482,7 @@ function StudentRequests({ session }) {
   const [line, setLine] = useState(EMPTY_REQUEST_LINE);
   const [requests, setRequests] = useState([]);
   const [catalogItems, setCatalogItems] = useState([]);
+  const [cart, setCart] = useState([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const showToast = React.useContext(ToastContext);
@@ -499,7 +500,7 @@ function StudentRequests({ session }) {
       .catch(err => showToast(err.message, 'error'));
   }, [session.token]);
 
-  function submit(event) {
+  function addToCart(event) {
     event.preventDefault();
     setMessage('');
     
@@ -508,19 +509,42 @@ function StudentRequests({ session }) {
       setMessage('Item selection and quantity (min 1) required');
       return;
     }
-    
+
+    const existing = cart.find(x => String(x.itemId) === String(line.itemId));
+    if (existing) {
+      setCart(cart.map(x => String(x.itemId) === String(line.itemId) ? { ...x, quantity: x.quantity + Number(line.quantity) } : x));
+    } else {
+      setCart([...cart, { itemId: line.itemId, itemName: line.itemName, quantity: Number(line.quantity) }]);
+    }
+    showToast('Item added to cart', 'success');
+    setLine(EMPTY_REQUEST_LINE);
+  }
+
+  function removeFromCart(itemId) {
+    setCart(cart.filter(x => String(x.itemId) !== String(itemId)));
+  }
+
+  function submitRequest() {
+    if (cart.length === 0) {
+      showToast('Cart is empty', 'error');
+      return;
+    }
     setLoading(true);
     apiFetch('/api/requests', session.token, {
       method: 'POST',
-      body: JSON.stringify({ items: [{ itemId: Number(line.itemId), itemName: line.itemName, quantity: Number(line.quantity) }] })
+      body: JSON.stringify({
+        items: cart.map(item => ({
+          itemId: Number(item.itemId),
+          itemName: item.itemName,
+          quantity: Number(item.quantity)
+        }))
+      })
     }).then(() => {
-      setLine(EMPTY_REQUEST_LINE);
+      setCart([]);
       showToast('Request submitted successfully', 'success');
-      setMessage('Request submitted.');
       load();
     }).catch(err => {
       showToast(err.message, 'error');
-      setMessage(err.message);
     }).finally(() => setLoading(false));
   }
 
@@ -530,7 +554,7 @@ function StudentRequests({ session }) {
     <section className="split">
       <div>
         <h2>Submit Request</h2>
-        <form className="data-form" onSubmit={submit}>
+        <form className="data-form" onSubmit={addToCart}>
           <div className="form-group" style={{ gridColumn: 'span 2' }}>
             <label htmlFor="itemSelect">Item Name</label>
             <select
@@ -568,7 +592,7 @@ function StudentRequests({ session }) {
           </div>
           <div className="form-group">
             <button className="primary" type="submit" disabled={loading} style={{ width: '100%' }}>
-              <Send size={18} /> {loading ? 'Submitting...' : 'Submit'}
+              Add to Cart
             </button>
           </div>
           {selectedItem && (
@@ -580,6 +604,23 @@ function StudentRequests({ session }) {
           )}
         </form>
         {message && <p className="notice">{message}</p>}
+
+        {cart.length > 0 && (
+          <div style={{ marginTop: '24px', borderTop: '1px solid var(--border)', paddingTop: '16px', textAlign: 'left' }}>
+            <h3>Your Cart</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {cart.map(item => (
+                <li key={item.itemId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-base)', padding: '8px 12px', borderRadius: '6px', fontSize: '14px' }}>
+                  <span><strong>{item.itemName}</strong> x {item.quantity}</span>
+                  <button onClick={() => removeFromCart(item.itemId)} style={{ background: 'transparent', color: 'var(--error)', cursor: 'pointer', fontSize: '13px', border: 'none', padding: 0, fontWeight: '600' }}>Remove</button>
+                </li>
+              ))}
+            </ul>
+            <button className="primary" onClick={submitRequest} disabled={loading} style={{ width: '100%', marginTop: '8px' }}>
+              Submit Request ({cart.length} item{cart.length > 1 ? 's' : ''})
+            </button>
+          </div>
+        )}
       </div>
       <RequestTable requests={requests} />
     </section>
