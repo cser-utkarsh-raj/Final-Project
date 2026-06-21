@@ -16,6 +16,7 @@ public class InventoryServiceApplication {
         SpringApplication.run(InventoryServiceApplication.class, args);
     }
 
+    //it seeds the database with initial stationery items if the repository is empty, ensuring that there are some default items available for testing or demonstration purposes when the application starts up
     @Bean
     CommandLineRunner seedItems(StationeryItemRepository items) {
         return args -> {

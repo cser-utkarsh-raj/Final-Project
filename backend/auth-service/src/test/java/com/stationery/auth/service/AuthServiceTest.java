@@ -14,12 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+// Unit tests for AuthService class
 class AuthServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
     private final JwtService jwt = mock(JwtService.class);
     private final AuthService service = new AuthService(users, encoder, jwt);
 
+// Test to check if register method blocks duplicate email registration
     @Test
     void registerBlocksDuplicateEmail() {
         when(users.existsByEmail("a@college.edu")).thenReturn(true);
@@ -27,6 +29,7 @@ class AuthServiceTest {
                 () -> service.register(new RegisterRequest("A", "a@college.edu", "Password1", Role.STUDENT)));
     }
 
+// Test to check if login method rejects invalid password
     @Test
     void loginRejectsBadPassword() {
         User user = new User("Student", "student@college.edu", "hash", Role.STUDENT);

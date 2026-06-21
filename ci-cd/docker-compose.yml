@@ -18,7 +18,7 @@ services:
     ports:
       - "8761:8761"
 
-  config-server:
+  config-server: 
     build: ../backend/config-server
     ports:
       - "8888:8888"
@@ -26,6 +26,7 @@ services:
       EUREKA_URL: http://discovery-server:8761/eureka/
     depends_on:
       - discovery-server
+
 
   auth-service:
     build: ../backend/auth-service

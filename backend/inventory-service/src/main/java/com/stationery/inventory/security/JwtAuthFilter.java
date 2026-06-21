@@ -27,21 +27,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
+
+    // This method is called for each incoming HTTP request. 
+    //It checks for the presence of a JWT in the Authorization header, validates it and extracts the user's email and role from the token's claims.
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
-            Claims claims = Jwts.parser()
+            Claims claims = Jwts.parser() 
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(auth.substring(7))
                     .getPayload();
-            String role = claims.get("role", String.class);
-            var principal = claims.getSubject();
-            request.setAttribute("actorEmail", principal);
+
+            // Extract the user's role from the claims
+            String role = claims.get("role", String.class); 
+            var principal = claims.getSubject(); // Extract the user's email (subject) from the claims
+            request.setAttribute("actorEmail", principal); // Set the user's email as an attribute in the request
             SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                     principal, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))));
         }
-        chain.doFilter(request, response);
+// passes the request and response to the next filter in the chain,till the end of the filter chain
+        chain.doFilter(request, response); 
     }
 }

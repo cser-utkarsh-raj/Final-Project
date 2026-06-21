@@ -83,6 +83,7 @@ function ToastProvider({ children }) {
   );
 }
 
+// API helper function to make authenticated requests and handle responses
 function apiFetch(path, token, options = {}) {
   return fetch(`${API}${path}`, {
     ...options,
@@ -101,6 +102,7 @@ function apiFetch(path, token, options = {}) {
   });
 }
 
+// Main App Component
 function App() {
   const [session, setSession] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);

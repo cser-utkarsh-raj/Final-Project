@@ -18,6 +18,7 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    // Configure stateless security: disable CORS/CSRF, allow health/h2 endpoints and use JwtAuthFilter
     @Bean
     SecurityFilterChain security(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         return http.cors(cors -> cors.disable())

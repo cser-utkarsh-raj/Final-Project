@@ -6,7 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class AuthDtos {
+// contains data transfer objects (DTOs) for handling authentication-related requests and responses in the application
+public class AuthDtos { 
     public record RegisterRequest(
             @NotBlank String fullName,
             @Email @NotBlank String email,
@@ -14,7 +15,9 @@ public class AuthDtos {
             @NotNull Role role
     ) {}
 
+    // DTO for login requests
     public record LoginRequest(@Email @NotBlank String email, @NotBlank String password) {}
 
+    // DTO for authentication responses, including user details and JWT token information
     public record AuthResponse(Long userId, String fullName, String email, Role role, String token, long expiresInSeconds) {}
 }

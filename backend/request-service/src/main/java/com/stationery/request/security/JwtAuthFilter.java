@@ -29,6 +29,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        // Extract bearer token, parse claims and populate request attributes + SecurityContext.
+        // actorEmail and userId attributes are used downstream by controllers/services for auditing and ownership.
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
             Claims claims = Jwts.parser()
@@ -37,8 +39,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     .parseSignedClaims(auth.substring(7))
                     .getPayload();
             String role = claims.get("role", String.class);
+            // subject -> user email, userId claim -> numeric id
             request.setAttribute("actorEmail", claims.getSubject());
             request.setAttribute("userId", Long.valueOf(claims.get("userId").toString()));
+            // Set Spring Security principal so @PreAuthorize checks work
             SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                     claims.getSubject(), null, List.of(new SimpleGrantedAuthority("ROLE_" + role))));
         }

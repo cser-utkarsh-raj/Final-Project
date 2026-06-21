@@ -10,16 +10,19 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@EnableDiscoveryClient
-@SpringBootApplication
+@EnableDiscoveryClient // Allows eureka server to discover this service
+@SpringBootApplication // Main class to bootstrap the Spring Boot application
 public class AuthServiceApplication {
+
+    // Main method to run the Spring Boot application
     public static void main(String[] args) {
         SpringApplication.run(AuthServiceApplication.class, args);
     }
-
-    @Bean
+    
+    // one student and one admin user will be created if they don't exist in the database
+    @Bean 
     CommandLineRunner seedUsers(UserRepository users, PasswordEncoder encoder) {
-        return args -> {
+        return args -> { 
             if (users.findByEmail("admin@college.edu").isEmpty()) {
                 users.save(new User("Admin User", "admin@college.edu", encoder.encode("Admin@123"), Role.ADMIN));
             }

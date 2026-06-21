@@ -8,6 +8,7 @@ public class RequestLine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    // owning request (many lines -> one request)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", nullable = false)
     private StationeryRequest request;
@@ -20,6 +21,7 @@ public class RequestLine {
 
     protected RequestLine() {}
 
+    // Construct a request line associated with a parent StationeryRequest
     public RequestLine(StationeryRequest request, Long itemId, String itemName, int quantity) {
         this.request = request;
         this.itemId = itemId;

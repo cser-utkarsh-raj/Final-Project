@@ -10,21 +10,25 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+// service for generating and validating JWT tokens
 @Service
 public class JwtService {
-    private final SecretKey key;
-    private final long expirationMs;
+    private final SecretKey key; //key used to sign the JWT token
+    private final long expirationMs; //expiration time for the JWT token in milliseconds
 
+    // Constructor to initialize the secret key and expiration time for JWT tokens
     public JwtService(
             @Value("${jwt.secret:stationery-management-local-secret-key-that-is-long-enough-for-hmac}") String secret,
             @Value("${jwt.expiration-ms:86400000}") long expirationMs) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMs = expirationMs;
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); //key used to sign the JWT token
+        this.expirationMs = expirationMs; 
     }
-
-    public String generate(User user) {
-        Instant now = Instant.now();
-        return Jwts.builder()
+    
+    // Method to generate a JWT token for a given user
+    public String generate(User user) { 
+        // Get the current time and set the expiration time for the JWT token
+        Instant now = Instant.now(); 
+        return Jwts.builder() 
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
@@ -34,8 +38,9 @@ public class JwtService {
                 .signWith(key)
                 .compact();
     }
-
-    public long expiresInSeconds() {
+    
+    // Method to get the expiration time for the JWT token in seconds
+    public long expiresInSeconds() { 
         return expirationMs / 1000;
     }
 }

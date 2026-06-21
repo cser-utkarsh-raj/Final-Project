@@ -15,20 +15,22 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
-@Configuration
+@Configuration 
 @EnableMethodSecurity
+
+//this class configures security settings for the inventory service
 public class SecurityConfig {
-    @Bean
+    @Bean 
     SecurityFilterChain security(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
-        return http.cors(cors -> cors.disable())
+        return http.cors(cors -> cors.disable()) 
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/h2-console/**", "/actuator/health").permitAll()
                         .anyRequest().authenticated())
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) 
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) 
+                .build(); 
     }
 }

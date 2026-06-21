@@ -15,13 +15,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
-@Configuration
+
+@Configuration // for configuring security settings
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(cors -> cors.disable())
+                .cors(cors -> cors.disable()) 
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -31,8 +32,8 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
+    @Bean // for encoding passwords securely using the BCrypt hashing algorithm
+    PasswordEncoder passwordEncoder() { 
         return new BCryptPasswordEncoder();
     }
 }

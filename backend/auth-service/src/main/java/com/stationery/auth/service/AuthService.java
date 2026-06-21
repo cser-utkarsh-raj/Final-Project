@@ -11,18 +11,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Service  // Tells Spring Boot that this class holds our business logic
 public class AuthService {
-    private final UserRepository users;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    // Dependencies etc
+    private final UserRepository users; //talks to the database
+    private final PasswordEncoder passwordEncoder; //used to hash the password
+    private final JwtService jwtService; //used to generate the JWT token
 
+    // Constructor injection for dependencies
     public AuthService(UserRepository users, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
-
+    // If anything crashes midway, undo all database changes 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
@@ -36,7 +38,7 @@ public class AuthService {
                 request.role()));
         return response(user);
     }
-
+    // Login method to authenticate a user,finds them by email,checks password,and returns an AuthResponse with user details and JWT token
     public AuthResponse login(LoginRequest request) {
         User user = users.findByEmail(request.email().trim().toLowerCase())
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
@@ -45,7 +47,7 @@ public class AuthService {
         }
         return response(user);
     }
-
+    // Helper method to create an AuthResponse object with user details and JWT token
     private AuthResponse response(User user) {
         return new AuthResponse(user.getId(), user.getFullName(), user.getEmail(), user.getRole(), jwtService.generate(user), jwtService.expiresInSeconds());
     }

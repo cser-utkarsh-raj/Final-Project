@@ -3,6 +3,7 @@ package com.stationery.request.model;
 import jakarta.persistence.*;
 import java.time.Instant;
 
+// Audit entry for request lifecycle events (submitted/approved/rejected).
 @Entity
 @Table(name = "request_audit_logs")
 public class RequestAuditLog {
@@ -18,6 +19,7 @@ public class RequestAuditLog {
 
     protected RequestAuditLog() {}
 
+    // Create an audit log referencing the request id, action name, actor and optional details
     public RequestAuditLog(Long requestId, String action, String actorEmail, String details) {
         this.requestId = requestId;
         this.action = action;

@@ -36,12 +36,14 @@ public class StationeryRequest {
         lines.add(new RequestLine(this, itemId, itemName, quantity));
     }
 
+    // Transition to APPROVED. Validates current state is PENDING to avoid invalid transitions.
     public void approve() {
         if (status != RequestStatus.PENDING) throw new IllegalStateException("Only pending requests can be approved");
         status = RequestStatus.APPROVED;
         updatedAt = Instant.now();
     }
 
+    // Transition to REJECTED with a stored reason. Ensures only PENDING requests can be rejected.
     public void reject(String reason) {
         if (status != RequestStatus.PENDING) throw new IllegalStateException("Only pending requests can be rejected");
         status = RequestStatus.REJECTED;
