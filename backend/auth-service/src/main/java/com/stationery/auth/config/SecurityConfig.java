@@ -16,14 +16,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import java.util.List;
 
 
-@Configuration // for configuring security settings
-@EnableWebSecurity
-public class SecurityConfig {
-    @Bean
+@Configuration // for configuring security settings 
+@EnableWebSecurity 
+public class SecurityConfig { //jwt authentication and authorization settings for the auth service
+    @Bean 
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.disable()) 
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()

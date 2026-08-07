@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Check, ClipboardList, LogOut, PackagePlus, RefreshCcw, Send, ShieldCheck, X, Edit, Trash2 } from 'lucide-react';
+import { Check, ClipboardList, LogOut, PackagePlus, RefreshCcw, Send, ShieldCheck, X, PenTool, Sparkles, Layers } from 'lucide-react';
 import './styles.css';
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -13,35 +13,58 @@ const EMPTY_REQUEST_LINE = { itemId: '', itemName: '', quantity: 1 };
 
 const ToastContext = React.createContext(null);
 
+// Official StoreBook Logo with Bookmark/Diagonal Arrow (Matching Favicon)
+function StoreBookLogo({ size = 24, fill = "#eab308", stroke = "#121212", strokeWidth = 2.5 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+      <path d="m14 6-4 4" />
+      <path d="M10 6h4v4" />
+    </svg>
+  );
+}
+
 // Home/Welcome Page Component
 function HomePage({ onNavigate }) {
   return (
     <div className="home-page">
       <div className="home-hero">
         <div className="hero-content">
-          <h1>Stationery Management System</h1>
-          <p className="hero-subtitle">Manage your college stationery inventory efficiently</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#eab308', color: '#121212', padding: '16px', border: '3.5px solid #121212', boxShadow: '4px 4px 0px #121212', marginBottom: '20px' }}>
+            <StoreBookLogo size={44} strokeWidth={2.5} fill="#eab308" stroke="#121212" />
+          </div>
+          <h1 className="brand-title">StoreBook</h1>
+          <p className="hero-subtitle">Stationery Management System</p>
           
           <div className="feature-grid">
             <div className="feature-card">
-              <PackagePlus size={32} />
-              <h3>Manage Items</h3>
-              <p>Track and organize all stationery items</p>
+              <StoreBookLogo size={36} />
+              <h3>Catalog Inventory</h3>
+              <p>Track and organize all college stationery items</p>
             </div>
             <div className="feature-card">
-              <ClipboardList size={32} />
-              <h3>Create Requests</h3>
-              <p>Submit stationery requests easily</p>
+              <PenTool size={36} />
+              <h3>Student Requests</h3>
+              <p>Submit stationery requests easily in real-time</p>
             </div>
             <div className="feature-card">
-              <RefreshCcw size={32} />
-              <h3>Track Status</h3>
-              <p>Monitor request approvals in real-time</p>
+              <RefreshCcw size={36} />
+              <h3>Request Tracking</h3>
+              <p>Monitor request approvals and fulfillment</p>
             </div>
             <div className="feature-card">
-              <ShieldCheck size={32} />
-              <h3>Secure Access</h3>
-              <p>Role-based access control</p>
+              <ShieldCheck size={36} />
+              <h3>Secure RBAC</h3>
+              <p>Role-based access control for students and admins</p>
             </div>
           </div>
 
@@ -132,7 +155,7 @@ function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <ShieldCheck size={24} />
+          <StoreBookLogo size={24} strokeWidth={2.5} fill="#eab308" stroke="#121212" />
           <div>
             <strong>StoreBook</strong>
             <span>{session.role.toLowerCase()}</span>
@@ -441,9 +464,32 @@ function InventoryAdmin({ session }) {
       .finally(() => setLoading(false));
   }
 
+  const PRESETS = [
+    { name: 'Pastel Highlighter Set', category: 'MARKER', unit: 'set', availableQuantity: 50, minimumQuantity: 10 },
+    { name: 'Spiral Journal 200 Pages', category: 'NOTEBOOK', unit: 'piece', availableQuantity: 80, minimumQuantity: 15 },
+    { name: 'Black Gel Pen Pack', category: 'PEN', unit: 'packet', availableQuantity: 120, minimumQuantity: 25 },
+    { name: 'Sticky Notes Neon 100s', category: 'PAPER', unit: 'pad', availableQuantity: 200, minimumQuantity: 30 },
+    { name: 'Heavy Duty Stapler Box', category: 'OTHER', unit: 'box', availableQuantity: 45, minimumQuantity: 8 },
+  ];
+
   return (
     <section className="form-section">
       <h2>Add Stationery Item</h2>
+      <div style={{ margin: '16px 0 20px', padding: '16px', background: '#f8fafc', border: '2.5px solid #0f172a', boxShadow: '3px 3px 0px #0f172a' }}>
+        <p style={{ fontSize: '13px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '10px' }}>✨ Quick Add Stationery Presets:</p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {PRESETS.map((preset, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setForm(preset)}
+              style={{ background: '#e0f2fe', color: '#0f172a', border: '2px solid #0f172a', boxShadow: '2px 2px 0px #0f172a', padding: '6px 12px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+            >
+              + {preset.name}
+            </button>
+          ))}
+        </div>
+      </div>
       <form className="data-form" onSubmit={submit}>
         <div className="form-group">
           <label htmlFor="itemName">Item Name</label>
