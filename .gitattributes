@@ -1,0 +1,5 @@
+# Preserve LF line endings for Docker and CI/CD configs
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
