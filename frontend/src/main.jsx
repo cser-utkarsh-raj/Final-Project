@@ -201,7 +201,16 @@ function AuthScreen({ onSession }) {
       setError('Email and password required');
       return;
     }
-    if (mode === 'register' && !form.fullName) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setError('Please enter a valid email address (e.g., name@college.edu)');
+      return;
+    }
+    if (form.password.length < 8) {
+      setError('Password must contain at least 8 characters');
+      return;
+    }
+    if (mode === 'register' && !form.fullName.trim()) {
       setError('Full name required');
       return;
     }
@@ -209,7 +218,7 @@ function AuthScreen({ onSession }) {
     setLoading(true);
     apiFetch(`/api/auth/${mode}`, null, {
       method: 'POST',
-      body: JSON.stringify(mode === 'login' ? { email: form.email, password: form.password } : form)
+      body: JSON.stringify(mode === 'login' ? { email: form.email.trim(), password: form.password } : { ...form, email: form.email.trim() })
     }).then(onSession).catch(err => {
       setError(err.message);
       showToast(err.message, 'error');
