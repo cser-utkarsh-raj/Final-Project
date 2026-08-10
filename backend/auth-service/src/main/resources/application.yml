@@ -5,9 +5,10 @@ spring:
   application:
     name: auth-service
   datasource:
-    url: jdbc:h2:mem:authdb
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:authdb}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
   h2:
     console:
       enabled: true
@@ -23,5 +24,3 @@ eureka:
 jwt:
   secret: ${JWT_SECRET:stationery-management-local-secret-key-that-is-long-enough-for-hmac}
   expiration-ms: 86400000
-
-
