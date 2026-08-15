@@ -13,18 +13,18 @@ COPY --from=builder /project/backend/inventory-service/target/*.jar inventory-se
 COPY --from=builder /project/backend/request-service/target/*.jar request-service.jar
 COPY --from=builder /project/backend/api-gateway/target/*.jar api-gateway.jar
 
-# Entrypoint script with JVM memory limits and log piping
+# Entrypoint script with IPv4 enforcement and memory limits
 RUN echo '#!/bin/sh\n\
 echo "Starting Auth Service on 8081..."\n\
-java -Xms32m -Xmx96m -jar /app/auth-service.jar &\n\
+java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/auth-service.jar &\n\
 echo "Starting Inventory Service on 8082..."\n\
-java -Xms32m -Xmx96m -jar /app/inventory-service.jar &\n\
+java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/inventory-service.jar &\n\
 echo "Starting Request Service on 8083..."\n\
-java -Xms32m -Xmx96m -jar /app/request-service.jar &\n\
-echo "Waiting 10s for microservices to initialize..."\n\
-sleep 10\n\
+java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/request-service.jar &\n\
+echo "Waiting 12s for microservices to initialize..."\n\
+sleep 12\n\
 echo "Starting API Gateway on 8080..."\n\
-exec java -Xms32m -Xmx96m -jar /app/api-gateway.jar\n\
+exec java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/api-gateway.jar\n\
 ' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 8080

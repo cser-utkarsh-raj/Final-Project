@@ -7,33 +7,19 @@ spring:
 
   cloud:
     gateway:
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        corsConfigurations:
-          '[/**]':
-            allowedOriginPatterns:
-              - "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: ${AUTH_SERVICE_URL:http://127.0.0.1:8081}
           predicates:
             - Path=/api/auth/**
 
         - id: inventory-service
-          uri: ${INVENTORY_SERVICE_URL:http://localhost:8082}
+          uri: ${INVENTORY_SERVICE_URL:http://127.0.0.1:8082}
           predicates:
             - Path=/api/items/**
 
         - id: request-service
-          uri: ${REQUEST_SERVICE_URL:http://localhost:8083}
+          uri: ${REQUEST_SERVICE_URL:http://127.0.0.1:8083}
           predicates:
             - Path=/api/requests/**
 
@@ -41,4 +27,4 @@ eureka:
   client:
     enabled: ${EUREKA_CLIENT_ENABLED:false}
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://127.0.0.1:8761/eureka/}
