@@ -13,18 +13,21 @@ COPY --from=builder /project/backend/inventory-service/target/*.jar inventory-se
 COPY --from=builder /project/backend/request-service/target/*.jar request-service.jar
 COPY --from=builder /project/backend/api-gateway/target/*.jar api-gateway.jar
 
-# Entrypoint script with IPv4 enforcement and memory limits
+# Entrypoint script with fast JVM startup flags and transparent logging
 RUN echo '#!/bin/sh\n\
-echo "Starting Auth Service on 8081..."\n\
-java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/auth-service.jar &\n\
-echo "Starting Inventory Service on 8082..."\n\
-java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/inventory-service.jar &\n\
-echo "Starting Request Service on 8083..."\n\
-java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/request-service.jar &\n\
-echo "Waiting 12s for microservices to initialize..."\n\
-sleep 12\n\
-echo "Starting API Gateway on 8080..."\n\
-exec java -Djava.net.preferIPv4Stack=true -Xms32m -Xmx96m -jar /app/api-gateway.jar\n\
+echo "=== Starting StoreBook Microservices Backend ==="\n\
+java -Djava.net.preferIPv4Stack=true -XX:TieredStopAtLevel=1 -Xms32m -Xmx160m -jar /app/auth-service.jar > /tmp/auth.log 2>&1 &\n\
+java -Djava.net.preferIPv4Stack=true -XX:TieredStopAtLevel=1 -Xms32m -Xmx160m -jar /app/inventory-service.jar > /tmp/inventory.log 2>&1 &\n\
+java -Djava.net.preferIPv4Stack=true -XX:TieredStopAtLevel=1 -Xms32m -Xmx160m -jar /app/request-service.jar > /tmp/request.log 2>&1 &\n\
+\n\
+echo "Waiting 15s for Spring Boot microservices to initialize..."\n\
+sleep 15\n\
+\n\
+echo "=== Auth Service Status ==="\n\
+cat /tmp/auth.log\n\
+\n\
+echo "=== Starting API Gateway on 8080 ==="\n\
+exec java -Djava.net.preferIPv4Stack=true -XX:TieredStopAtLevel=1 -Xms32m -Xmx160m -jar /app/api-gateway.jar\n\
 ' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 8080

@@ -5,22 +5,22 @@ spring:
   application:
     name: inventory-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:inventorydb}
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:inventorydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
     password: ${SPRING_DATASOURCE_PASSWORD:}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
   h2:
     console:
       enabled: true
   jpa:
     hibernate:
       ddl-auto: update
+    open-in-view: false
 
 eureka:
   client:
     enabled: ${EUREKA_CLIENT_ENABLED:false}
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://127.0.0.1:8761/eureka/}
 
 jwt:
   secret: ${JWT_SECRET:stationery-management-local-secret-key-that-is-long-enough-for-hmac}
