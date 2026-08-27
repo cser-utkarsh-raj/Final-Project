@@ -13,6 +13,31 @@ const EMPTY_REQUEST_LINE = { itemId: '', itemName: '', quantity: 1 };
 
 const ToastContext = React.createContext(null);
 
+function DotLogo({ size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width={size} height={size} fill="none">
+      <path d="M40 70 L160 70 L160 160 L100 190 L40 160 Z" fill="#E6E0F8" stroke="#121212" strokeWidth="8" strokeLinejoin="round" />
+      <path d="M55 85 L145 85 L145 150 L100 172 L55 150 Z" fill="#20B2AA" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M100 25 L108 50 L135 45 L120 65 L145 75 L115 85 L100 110 L85 85 L55 75 L80 65 L65 45 L92 50 Z" fill="#20B2AA" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M100 45 L105 60 L120 58 L110 70 L125 78 L105 85 L100 100 L95 85 L75 78 L90 70 L80 58 L95 60 Z" fill="#FFFFFF" />
+      <path d="M140 100 Q160 80 170 90 L165 110 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M165 85 C175 75, 185 85, 175 95 C185 95, 185 105, 175 105 C180 115, 170 120, 160 110 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M60 110 Q40 130 45 150 L65 140 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M35 145 C25 155, 35 165, 45 165 C45 175, 55 175, 60 165 C70 170, 75 160, 65 150 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M80 165 L75 190 L95 190 L90 165 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M120 165 L125 190 L105 190 L110 165 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M70 190 L95 190 L95 200 L65 200 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <path d="M105 190 L130 190 L135 200 L105 200 Z" fill="#9F7FF7" stroke="#121212" strokeWidth="6" strokeLinejoin="round" />
+      <circle cx="100" cy="115" r="45" fill="#20B2AA" stroke="#121212" strokeWidth="8" />
+      <circle cx="85" cy="110" r="5" fill="#121212" />
+      <circle cx="115" cy="110" r="5" fill="#121212" />
+      <circle cx="83" cy="108" r="1.5" fill="#FFFFFF" />
+      <circle cx="113" cy="108" r="1.5" fill="#FFFFFF" />
+      <path d="M95 118 Q100 125 105 118" fill="none" stroke="#121212" strokeWidth="4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Official StoreBook Logo with Bookmark/Diagonal Arrow (Matching Favicon)
 function StoreBookLogo({ size = 24, fill = "#eab308", stroke = "#121212", strokeWidth = 2.5 }) {
   return (
@@ -73,6 +98,14 @@ function HomePage({ onNavigate }) {
               Get Started
             </button>
           </div>
+        </div>
+      </div>
+      
+      <div style={{ position: 'absolute', bottom: '24px', width: '100%', display: 'flex', justifyContent: 'center', opacity: 0.8, cursor: 'default' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.5, transition: 'opacity 0.2s', pointerEvents: 'auto' }} onMouseOver={(e) => e.currentTarget.style.opacity = '1'} onMouseOut={(e) => e.currentTarget.style.opacity = '0.5'}>
+          <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: '#121212' }}>Presented by</span>
+          <DotLogo size={20} />
+          <span style={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 800, fontSize: '16px', letterSpacing: '-0.5px', color: '#121212' }}>.dot</span>
         </div>
       </div>
     </div>
@@ -165,6 +198,8 @@ function App() {
         {isAdmin && <button className={view === 'inventory' ? 'active' : ''} onClick={() => setView('inventory')}><PackagePlus size={18} /> Inventory</button>}
         <button className={view === 'requests' ? 'active' : ''} onClick={() => setView('requests')}><Send size={18} /> Requests</button>
         <button className="logout" onClick={() => setSession(null)}><LogOut size={18} /> Sign out</button>
+        
+
       </aside>
       <main className="workspace">
         <header className="topbar">
