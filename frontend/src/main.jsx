@@ -101,14 +101,18 @@ function HomePage({ onNavigate }) {
         </div>
       </div>
       
-      <div style={{ position: 'absolute', bottom: '24px', width: '100%', display: 'flex', justifyContent: 'center', opacity: 0.8, cursor: 'default' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.5, transition: 'opacity 0.2s', pointerEvents: 'auto' }} onMouseOver={(e) => e.currentTarget.style.opacity = '1'} onMouseOut={(e) => e.currentTarget.style.opacity = '0.5'}>
-          <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: '#121212' }}>Presented by</span>
-          <DotLogo size={20} />
-          <span style={{ fontFamily: '"Space Grotesk", sans-serif', fontWeight: 800, fontSize: '16px', letterSpacing: '-0.5px', color: '#121212' }}>.dot</span>
-        </div>
-      </div>
+      <DotFooter />
     </div>
+  );
+}
+
+function DotFooter() {
+  return (
+    <footer className="dot-footer" aria-label="StoreBook attribution">
+      <span className="dot-footer-label">Presented by</span>
+      <DotLogo size={20} />
+      <span className="dot-footer-wordmark">.dot</span>
+    </footer>
   );
 }
 
@@ -283,6 +287,7 @@ function AuthScreen({ onSession }) {
           <button className="primary" type="submit" disabled={loading}>{loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Create account')}</button>
         </form>
       </section>
+      <DotFooter />
     </main>
   );
 }
