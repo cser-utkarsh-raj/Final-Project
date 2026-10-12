@@ -674,7 +674,46 @@ tr:hover td {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 24px;
+  padding: 24px 24px 88px;
+  position: relative;
+}
+
+.dot-footer {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  color: var(--text-primary);
+  opacity: 0.62;
+  transition: opacity 0.2s ease;
+  cursor: default;
+}
+
+.dot-footer:hover {
+  opacity: 1;
+}
+
+.dot-footer-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dot-footer-wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.auth-page .dot-footer {
+  position: fixed;
 }
 
 .home-hero {
